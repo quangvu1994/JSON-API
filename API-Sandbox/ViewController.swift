@@ -19,14 +19,11 @@ class ViewController: UIViewController {
     @IBOutlet weak var releaseDateLabel: UILabel!
     @IBOutlet weak var priceLabel: UILabel!
     @IBOutlet weak var posterImageView: UIImageView!
+    var itunesLink: String?
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
-        
-        exerciseOne()
-        exerciseTwo()
-        exerciseThree()
         
         let apiToContact = "https://itunes.apple.com/us/rss/topmovies/limit=25/json"
         // This code will call the iTunes top 25 movies endpoint listed above
@@ -35,11 +32,15 @@ class ViewController: UIViewController {
             case .success:
                 if let value = response.result.value {
                     let json = JSON(value)
+                    let randomNumber = Int(arc4random_uniform(UInt32(json["feed"]["entry"].count)))
                     
-                    // Do what you need to with JSON here!
-                    // The rest is all boiler plate code you'll use for API requests
-                    
-                    
+                    let randomMovie = Movie(json: json["feed"]["entry"][randomNumber])
+                    self.movieTitleLabel.text = randomMovie.name
+                    self.rightsOwnerLabel.text = randomMovie.rightsOwner
+                    self.releaseDateLabel.text = randomMovie.releaseDate
+                    self.priceLabel.text = String(randomMovie.price)
+                    self.loadPoster(urlString: randomMovie.poster)
+                    self.itunesLink = randomMovie.link
                 }
             case .failure(let error):
                 print(error)
@@ -58,7 +59,9 @@ class ViewController: UIViewController {
     }
     
     @IBAction func viewOniTunesPressed(_ sender: AnyObject) {
-        
+        if let link = itunesLink {
+            UIApplication.shared.openURL(URL(string: link)!)
+        }
     }
     
 }
